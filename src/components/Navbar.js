@@ -11,6 +11,7 @@ import multiavatar from '@multiavatar/multiavatar';
 import logo from '../assets/logo.png';
 
 import Dashboard from './Dashboard';
+import Table from './Table';
 
 export default function Navbar(props) {
   const [showMenu, setMenu] = useState(false);
@@ -204,7 +205,9 @@ export default function Navbar(props) {
       <Switch>
         <Route path='/calendar'></Route>
         <Route path='/projects'></Route>
-        <Route path='/requests'></Route>
+        <Route path='/requests'>
+          <Table contract={props.contract} user={props.user} />
+        </Route>
         <Route path='/'>
           <Dashboard contract={props.contract} user={props.user} />
         </Route>

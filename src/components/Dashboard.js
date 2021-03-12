@@ -1,15 +1,25 @@
 import React, { Component } from 'react';
 
 export default class Dashboard extends Component {
-  state = {
-    tempContract: {},
-    templates: [],
-    fields: [],
-    docIssuer: '',
-    ownerAddress: '',
-    docName: '',
-    request: [],
-  };
+  constructor(props) {
+    super(props);
+    this.fetchTemplates = this.fetchTemplates.bind(this);
+    this.handleDocNameChange = this.handleDocNameChange.bind(this);
+    this.handleOwnerChange = this.handleOwnerChange.bind(this);
+    this.handlePropChange = this.handlePropChange.bind(this);
+    this.handleValueChange = this.handleValueChange.bind(this);
+    this.requestVerification = this.requestVerification.bind(this);
+
+    this.state = {
+      tempContract: {},
+      templates: [],
+      fields: [],
+      docIssuer: '',
+      ownerAddress: '',
+      docName: '',
+      request: [],
+    };
+  }
 
   componentDidMount() {
     this.fetchTemplates();
@@ -22,6 +32,9 @@ export default class Dashboard extends Component {
     let templates = [];
     let fields = [];
     let docIssuer = '';
+    let ownerAddress = '';
+    let docName = '';
+    let request = [];
 
     if (tempContract) {
       const { 0: issuer, 1: name, 2: data } = tempContract;
@@ -32,8 +45,17 @@ export default class Dashboard extends Component {
 
       fields = JSON.parse(data[0]);
       docIssuer = issuer[0];
+      docName = name[0];
     }
-    this.setState({ tempContract, templates, fields, docIssuer });
+    this.setState({
+      tempContract,
+      templates,
+      fields,
+      docIssuer,
+      ownerAddress,
+      docName,
+      request,
+    });
   };
 
   handleDocNameChange(event) {
@@ -55,7 +77,7 @@ export default class Dashboard extends Component {
 
   handleOwnerChange(event) {
     let ownerAddress = event.target.value;
-    this.setState(ownerAddress);
+    this.setState({ ownerAddress });
   }
 
   handlePropChange(event, index) {
@@ -84,6 +106,18 @@ export default class Dashboard extends Component {
         break;
       }
     }
+  }
+
+  requestVerification() {
+    this.props.contract.methods
+      .requestVerification(
+        this.state.ownerAddress,
+        this.state.docName,
+        JSON.stringify(this.state.request)
+      )
+      .send({ from: this.props.user });
+
+    this.fetchTemplates();
   }
 
   render() {
