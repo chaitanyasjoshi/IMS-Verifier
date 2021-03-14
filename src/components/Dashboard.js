@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+import Field from './Field';
 export default class Dashboard extends Component {
   constructor(props) {
     super(props);
@@ -23,6 +24,13 @@ export default class Dashboard extends Component {
 
   componentDidMount() {
     this.fetchTemplates();
+
+    this.props.contract.events.TemplateCreated((err, result) => {
+      if (err) {
+        return console.error(err);
+      }
+      this.fetchTemplates();
+    });
   }
 
   fetchTemplates = async () => {
@@ -109,15 +117,23 @@ export default class Dashboard extends Component {
   }
 
   requestVerification() {
-    this.props.contract.methods
-      .requestVerification(
-        this.state.ownerAddress,
-        this.state.docName,
-        JSON.stringify(this.state.request)
-      )
-      .send({ from: this.props.user });
+    try {
+      this.props.contract.methods
+        .requestVerification(
+          this.state.ownerAddress,
+          this.state.docName,
+          JSON.stringify(this.state.request)
+        )
+        .send({ from: this.props.user }, (err, txnHash) => {
+          if (err) {
+            alert(`Transaction signature denied`);
+          }
+        });
 
-    this.fetchTemplates();
+      this.fetchTemplates();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   render() {
@@ -188,42 +204,13 @@ export default class Dashboard extends Component {
 
                   <div className='col-span-9'>
                     {this.state.fields.map((field, i) => (
-                      <div key={i} className='mt-2 flex items-center'>
-                        <div className='flex items-center h-5'>
-                          <input
-                            id={`${field.label.replace(/\s/g, '')}`}
-                            name={`${field.label.replace(/\s/g, '')}`}
-                            type='checkbox'
-                            onClick={(event) => {
-                              this.handlePropChange(event, i);
-                            }}
-                            className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded'
-                          />
-                        </div>
-                        <div className='ml-3 text-sm'>
-                          <label
-                            htmlFor={`${field.label.replace(/\s/g, '')}`}
-                            className='font-medium text-gray-700'
-                          >
-                            {field.label}
-                          </label>
-                        </div>
-                        <input
-                          type={`${
-                            field.label.toLowerCase().includes('date')
-                              ? 'date'
-                              : 'text'
-                          }`}
-                          name='verifyVal'
-                          id='verifyVal'
-                          autoComplete='off'
-                          placeholder='Add value to be verified'
-                          onChange={(event) => {
-                            this.handleValueChange(event, i);
-                          }}
-                          className='mt-1 ml-3 focus:ring-indigo-500 focus:border-indigo-500 block shadow-sm sm:text-sm border-gray-300 rounded-md'
-                        />
-                      </div>
+                      <Field
+                        key={i}
+                        index={i}
+                        label={field.label}
+                        handlePropChange={this.handlePropChange}
+                        handleValueChange={this.handleValueChange}
+                      />
                     ))}
                   </div>
                 </div>
