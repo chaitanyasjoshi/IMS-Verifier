@@ -16,7 +16,7 @@ export default function Request(props) {
       .catch((error) => console.log(error.message));
   };
   return (
-    <tr className='flex justify-between items-center'>
+    <tr>
       <td className='px-6 py-4 whitespace-nowrape'>
         <div className='flex items-center'>
           <div className='flex-shrink-0 h-10 w-10'>
@@ -40,7 +40,7 @@ export default function Request(props) {
       </td>
       {decryptedData ? (
         <td className='px-6 py-4 whitespace-nowrap'>
-          {props.properties.map((ele, i) => (
+          {decryptedData.map((ele, i) => (
             <p key={i} className='text-sm text-gray-600'>
               {ele.label}
             </p>
@@ -74,7 +74,7 @@ export default function Request(props) {
       )}
       {decryptedData ? (
         <td className='px-6 py-4 whitespace-nowrap align-text-top'>
-          {props.properties.map((ele, i) => (
+          {decryptedData.map((ele, i) => (
             <p key={i} className='text-sm text-gray-600'>
               {ele.value}
             </p>
@@ -83,7 +83,7 @@ export default function Request(props) {
       ) : null}
       {decryptedData ? (
         <td className='px-6 py-4 whitespace-nowrap'>
-          {props.properties.map((ele, i) =>
+          {decryptedData.map((ele, i) =>
             ele.verified ? (
               <svg
                 key={i}

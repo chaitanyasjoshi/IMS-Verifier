@@ -152,7 +152,7 @@ export default class Dashboard extends Component {
         .getEncryptionPublicKey(this.state.ownerAddress)
         .call()
         .then((encryptionPublicKey) => {
-          const encryptedData = bufferToHex(
+          const encryptedDataOwner = bufferToHex(
             Buffer.from(
               JSON.stringify(
                 encrypt(
@@ -164,18 +164,37 @@ export default class Dashboard extends Component {
               'utf8'
             )
           );
+
           this.state.contract.methods
-            .requestVerification(
-              this.state.ownerAddress,
-              this.state.docName,
-              encryptedData
-            )
-            .send({ from: this.state.user }, (err, txnHash) => {
-              if (err) {
-                alert(`Transaction signature denied`);
-              } else {
-                this.fetchTemplates();
-              }
+            .getEncryptionPublicKey(this.state.user)
+            .call()
+            .then((encryptionPublicKey) => {
+              const encryptedDataVerifier = bufferToHex(
+                Buffer.from(
+                  JSON.stringify(
+                    encrypt(
+                      encryptionPublicKey,
+                      { data: JSON.stringify(this.state.request) },
+                      'x25519-xsalsa20-poly1305'
+                    )
+                  ),
+                  'utf8'
+                )
+              );
+              this.state.contract.methods
+                .requestVerification(
+                  this.state.ownerAddress,
+                  this.state.docName,
+                  encryptedDataOwner,
+                  encryptedDataVerifier
+                )
+                .send({ from: this.state.user }, (err, txnHash) => {
+                  if (err) {
+                    alert(`Transaction signature denied`);
+                  } else {
+                    this.fetchTemplates();
+                  }
+                });
             });
         });
     } catch (error) {
