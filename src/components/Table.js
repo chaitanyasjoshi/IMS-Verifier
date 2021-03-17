@@ -15,61 +15,40 @@ export default class Table extends Component {
   componentDidMount = () => {
     if (!auth.getContract()) {
       auth.init().then(() => {
-        this.setState(
-          { user: auth.getUser(), contract: auth.getContract() },
-          () => {
-            this.fetchRequests();
-
-            this.state.contract.events.RequestStatusUpdated(
-              { verifier: this.state.user },
-              (err, result) => {
-                if (err) {
-                  return console.error(err);
-                }
-                this.fetchRequests();
-              }
-            );
-
-            this.state.contract.events.RequestGenerated(
-              { verifier: this.state.user },
-              (err, result) => {
-                if (err) {
-                  return console.error(err);
-                }
-                this.fetchRequests();
-              }
-            );
-          }
-        );
+        this.initialize();
       });
     } else {
-      this.setState(
-        { user: auth.getUser(), contract: auth.getContract() },
-        () => {
-          this.fetchRequests();
-
-          this.state.contract.events.RequestStatusUpdated(
-            { verifier: this.state.user },
-            (err, result) => {
-              if (err) {
-                return console.error(err);
-              }
-              this.fetchRequests();
-            }
-          );
-
-          this.state.contract.events.RequestGenerated(
-            { verifier: this.state.user },
-            (err, result) => {
-              if (err) {
-                return console.error(err);
-              }
-              this.fetchRequests();
-            }
-          );
-        }
-      );
+      this.initialize();
     }
+  };
+
+  initialize = () => {
+    this.setState(
+      { user: auth.getUser(), contract: auth.getContract() },
+      () => {
+        this.fetchRequests();
+
+        this.state.contract.events.RequestStatusUpdated(
+          { verifier: this.state.user },
+          (err, result) => {
+            if (err) {
+              return console.error(err);
+            }
+            this.fetchRequests();
+          }
+        );
+
+        this.state.contract.events.RequestGenerated(
+          { verifier: this.state.user },
+          (err, result) => {
+            if (err) {
+              return console.error(err);
+            }
+            this.fetchRequests();
+          }
+        );
+      }
+    );
   };
 
   fetchRequests = async () => {
@@ -77,9 +56,8 @@ export default class Table extends Component {
     await this.state.contract.methods
       .getVerifierRequests()
       .call({ from: this.state.user })
-      .then((requests) => {
+      .then(({ 0: owner, 1: docName, 2: properties, 3: status }) => {
         const req = [];
-        const { 0: owner, 1: docName, 2: properties, 3: status } = requests;
 
         for (let index = 0; index < owner.length; index++) {
           let ele = [
@@ -90,6 +68,7 @@ export default class Table extends Component {
           ];
           req.push(ele);
         }
+
         this.setState({ requests: req });
       });
   };

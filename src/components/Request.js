@@ -1,14 +1,18 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import multiavatar from '@multiavatar/multiavatar';
 
 export default function Request(props) {
   const [decryptedData, setDecryptedData] = useState(null);
 
-  const decryptData = (data, user) => {
+  useEffect(() => {
+    setDecryptedData(null);
+  }, [props.properties]);
+
+  const decryptData = () => {
     window.ethereum
       .request({
         method: 'eth_decrypt',
-        params: [data, user],
+        params: [props.properties, props.user],
       })
       .then((decryptedMessage) => {
         setDecryptedData(JSON.parse(decryptedMessage));
@@ -51,9 +55,7 @@ export default function Request(props) {
           <button
             name='decrypt'
             id='decrypt'
-            onClick={() => {
-              decryptData(props.properties, props.user);
-            }}
+            onClick={decryptData}
             className='flex items-center justify-between py-1 px-2 m-auto border border-transparent shadow-sm text-sm rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
           >
             <svg

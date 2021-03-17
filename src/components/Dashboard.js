@@ -17,9 +17,8 @@ export default class Dashboard extends Component {
     this.requestVerification = this.requestVerification.bind(this);
 
     this.state = {
-      user: null,
+      user: '',
       contract: null,
-      tempContract: {},
       templates: [],
       fields: [],
       docIssuer: '',
@@ -64,36 +63,33 @@ export default class Dashboard extends Component {
   }
 
   fetchTemplates = async () => {
-    const tempContract = await this.state.contract.methods
-      .getTemplates()
-      .call();
     let templates = [];
     let fields = [];
     let docIssuer = '';
-    let ownerAddress = '';
     let docName = '';
-    let request = [];
+    await this.state.contract.methods
+      .getTemplates()
+      .call()
+      .then(({ 0: issuer, 1: name, 2: data }) => {
+        for (let index = 0; index < issuer.length; index++) {
+          let ele = [issuer[index], name[index], data[index]];
+          templates.push(ele);
+        }
 
-    if (tempContract) {
-      const { 0: issuer, 1: name, 2: data } = tempContract;
-      for (let index = 0; index < issuer.length; index++) {
-        let ele = [issuer[index], name[index], data[index]];
-        templates.push(ele);
-      }
+        fields = JSON.parse(data[0]);
+        docIssuer = issuer[0];
+        docName = name[0];
+        this.setState({
+          templates,
+          fields,
+          docIssuer,
+          docName,
+        });
+      });
+  };
 
-      fields = JSON.parse(data[0]);
-      docIssuer = issuer[0];
-      docName = name[0];
-    }
-    this.setState({
-      tempContract,
-      templates,
-      fields,
-      docIssuer,
-      ownerAddress,
-      docName,
-      request,
-    });
+  clearInputs = () => {
+    this.setState({ ownerAddress: '', request: [] });
   };
 
   handleDocNameChange(event) {
@@ -192,7 +188,7 @@ export default class Dashboard extends Component {
                   if (err) {
                     alert(`Transaction signature denied`);
                   } else {
-                    this.fetchTemplates();
+                    this.clearInputs();
                   }
                 });
             });
