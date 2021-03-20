@@ -1,23 +1,24 @@
 import React, { Component } from 'react';
+import ReactNotification, { store } from 'react-notifications-component';
 import { bufferToHex } from 'ethereumjs-util';
 import { encrypt } from 'eth-sig-util';
 
 import auth from '../utils/auth';
+import 'react-notifications-component/dist/theme.css';
+import 'animate.css';
 
 import Field from './Field';
 import Navbar from './Navbar';
 export default class Dashboard extends Component {
   constructor(props) {
     super(props);
-    this.fetchTemplates = this.fetchTemplates.bind(this);
     this.handleDocNameChange = this.handleDocNameChange.bind(this);
     this.handleOwnerChange = this.handleOwnerChange.bind(this);
     this.handlePropChange = this.handlePropChange.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
-    this.requestVerification = this.requestVerification.bind(this);
 
     this.state = {
-      user: '',
+      user: null,
       contract: null,
       templates: [],
       fields: [],
@@ -28,39 +29,53 @@ export default class Dashboard extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     if (!auth.getContract()) {
       auth.init().then(() => {
-        this.setState(
-          { user: auth.getUser(), contract: auth.getContract() },
-          () => {
-            this.fetchTemplates();
-
-            this.state.contract.events.TemplateCreated((err, result) => {
-              if (err) {
-                return console.error(err);
-              }
-              this.fetchTemplates();
-            });
-          }
-        );
+        this.initialize();
       });
     } else {
-      this.setState(
-        { user: auth.getUser(), contract: auth.getContract() },
-        () => {
-          this.fetchTemplates();
+      this.initialize();
+    }
+  };
 
-          this.state.contract.events.TemplateCreated((err, result) => {
+  initialize = () => {
+    this.setState(
+      { user: auth.getUser(), contract: auth.getContract() },
+      () => {
+        this.fetchTemplates();
+
+        this.state.contract.events.TemplateCreated((err, result) => {
+          if (err) {
+            return console.error(err);
+          }
+          this.fetchTemplates();
+        });
+
+        this.state.contract.events.RequestGenerated(
+          { filter: { verifier: this.state.user } },
+          (err, result) => {
             if (err) {
               return console.error(err);
             }
-            this.fetchTemplates();
-          });
-        }
-      );
-    }
-  }
+            store.addNotification({
+              title: 'Verification',
+              message: 'Verification request generated successfully',
+              type: 'success', // 'default', 'success', 'info', 'warning'
+              container: 'top-right', // where to position the notifications
+              animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+              animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+              dismiss: {
+                duration: 3000,
+                showIcon: true,
+                pauseOnHover: true,
+              },
+            });
+          }
+        );
+      }
+    );
+  };
 
   fetchTemplates = async () => {
     let templates = [];
@@ -93,20 +108,15 @@ export default class Dashboard extends Component {
   };
 
   handleDocNameChange(event) {
-    const { 0: issuer, 1: name, 2: data } = this.state.tempContract;
-    let fields = [];
-    let docIssuer = '';
-    let docName = event.target.value;
+    let docIssuer, docName, fields;
+    let template = this.state.templates.filter(
+      (template) => template[1] === event.target.value
+    );
 
-    for (let index = 0; index < name.length; index++) {
-      if (name[index] === event.target.value) {
-        fields = JSON.parse(data[index]);
-        docIssuer = issuer[index];
-        break;
-      }
-    }
-
-    this.setState({ fields, docIssuer, docName });
+    docIssuer = template[0][0];
+    docName = template[0][1];
+    fields = JSON.parse(template[0][2]);
+    this.setState({ fields, docIssuer, docName, request: [] });
   }
 
   handleOwnerChange(event) {
@@ -186,7 +196,22 @@ export default class Dashboard extends Component {
                 )
                 .send({ from: this.state.user }, (err, txnHash) => {
                   if (err) {
-                    alert(`Transaction signature denied`);
+                    store.addNotification({
+                      title: 'Transaction failed',
+                      message: 'Sign the transaction to request verification',
+                      type: 'danger', // 'default', 'success', 'info', 'warning'
+                      container: 'top-right', // where to position the notifications
+                      animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+                      animationOut: [
+                        'animate__animated',
+                        'animate__fadeOutDown',
+                      ], // animate.css classes that's applied
+                      dismiss: {
+                        duration: 3000,
+                        showIcon: true,
+                        pauseOnHover: true,
+                      },
+                    });
                   } else {
                     this.clearInputs();
                   }
@@ -202,6 +227,7 @@ export default class Dashboard extends Component {
     return (
       <div>
         <Navbar user={this.state.user} history={this.props.history} />
+        <ReactNotification className='font-Poppins' />
         <div className='mt-10 max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 font-Poppins'>
           <div className='mt-10 sm:mt-0'>
             <div className='mt-5 md:mt-0 md:col-span-2'>
@@ -272,6 +298,7 @@ export default class Dashboard extends Component {
                           key={i}
                           index={i}
                           label={field.label}
+                          docName={this.state.docName}
                           handlePropChange={this.handlePropChange}
                           handleValueChange={this.handleValueChange}
                         />

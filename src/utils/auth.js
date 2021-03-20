@@ -6,6 +6,8 @@ class auth {
     this.contract = null;
     this.user = null;
     this.init();
+
+    this.init = this.init.bind(this);
   }
 
   init = async () => {
@@ -31,8 +33,8 @@ class auth {
       window.ethereum.on(
         'accountsChanged',
         async function (accounts) {
-          auth.logout(() => {
-            this.props.history.push('/');
+          this.logout(() => {
+            this.history.push('/');
           });
         }.bind(this)
       );
@@ -46,15 +48,17 @@ class auth {
   };
 
   login = async (username) => {
-    await this.contract.methods
+    return await this.contract.methods
       .login('Verifier', username)
       .call({ from: this.user })
-      .then((success) => {
-        if (success) {
+      .then(({ 0: status, 1: message, 2: username }) => {
+        if (status === 'success') {
           localStorage.setItem('authenticated', true);
+          localStorage.setItem('username', username);
         } else {
           localStorage.setItem('authenticated', false);
         }
+        return message;
       });
   };
 
@@ -87,6 +91,10 @@ class auth {
 
   getUser() {
     return this.user;
+  }
+
+  getUsername() {
+    return localStorage.getItem('username');
   }
 }
 

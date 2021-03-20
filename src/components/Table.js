@@ -29,7 +29,7 @@ export default class Table extends Component {
         this.fetchRequests();
 
         this.state.contract.events.RequestStatusUpdated(
-          { verifier: this.state.user },
+          { filter: { verifier: this.state.user } },
           (err, result) => {
             if (err) {
               return console.error(err);
@@ -39,7 +39,7 @@ export default class Table extends Component {
         );
 
         this.state.contract.events.RequestGenerated(
-          { verifier: this.state.user },
+          { filter: { verifier: this.state.user }, fromBlock: 'latest' },
           (err, result) => {
             if (err) {
               return console.error(err);

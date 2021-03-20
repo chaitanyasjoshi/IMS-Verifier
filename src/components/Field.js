@@ -1,9 +1,13 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function Field(props) {
   const [ischecked, setChecked] = useState(false);
   const [value, setValue] = useState('');
+
+  useEffect(() => {
+    setChecked(false);
+    setValue('');
+  }, [props.docName]);
   return (
     <div className='mt-2 flex items-center'>
       <div className='flex items-center h-5'>
