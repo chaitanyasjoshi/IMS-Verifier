@@ -56,21 +56,24 @@ export default class Table extends Component {
     await this.state.contract.methods
       .getVerifierRequests()
       .call({ from: this.state.user })
-      .then(({ 0: owner, 1: docName, 2: properties, 3: status }) => {
-        const req = [];
+      .then(
+        ({ 0: owner, 1: ownerUname, 2: docName, 3: properties, 4: status }) => {
+          const req = [];
 
-        for (let index = 0; index < owner.length; index++) {
-          let ele = [
-            owner[index],
-            docName[index],
-            properties[index],
-            status[index],
-          ];
-          req.push(ele);
+          for (let index = 0; index < owner.length; index++) {
+            let ele = [
+              owner[index],
+              ownerUname[index],
+              docName[index],
+              properties[index],
+              status[index],
+            ];
+            req.push(ele);
+          }
+
+          this.setState({ requests: req });
         }
-
-        this.setState({ requests: req });
-      });
+      );
   };
 
   render() {
@@ -89,9 +92,10 @@ export default class Table extends Component {
                           key={i}
                           user={this.state.user}
                           owner={ele[0]}
-                          docName={ele[1]}
-                          properties={ele[2]}
-                          status={ele[3]}
+                          ownerUname={ele[1]}
+                          docName={ele[2]}
+                          properties={ele[3]}
+                          status={ele[4]}
                         />
                       );
                     })}
