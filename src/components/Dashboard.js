@@ -40,6 +40,13 @@ export default class Dashboard extends Component {
   };
 
   initialize = () => {
+    window.ethereum.on('accountsChanged', async function (accounts) {
+      auth.logout(() => {
+        this.props.history.push('/');
+        window.location.reload();
+      });
+    });
+
     this.setState(
       { user: auth.getUser(), contract: auth.getContract() },
       () => {
@@ -153,73 +160,118 @@ export default class Dashboard extends Component {
   }
 
   requestVerification = async () => {
-    try {
-      await this.state.contract.methods
-        .getEncryptionPublicKey(this.state.ownerAddress)
-        .call()
-        .then((encryptionPublicKey) => {
-          const encryptedDataOwner = bufferToHex(
-            Buffer.from(
-              JSON.stringify(
-                encrypt(
-                  encryptionPublicKey,
-                  { data: JSON.stringify(this.state.request) },
-                  'x25519-xsalsa20-poly1305'
-                )
-              ),
-              'utf8'
-            )
-          );
+    if (this.state.ownerAddress === '') {
+      store.addNotification({
+        title: 'Invalid owner address',
+        message: 'Owner address cannot be empty',
+        type: 'danger', // 'default', 'success', 'info', 'warning'
+        container: 'top-right', // where to position the notifications
+        animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+        animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+        dismiss: {
+          duration: 3000,
+          showIcon: true,
+          pauseOnHover: true,
+        },
+      });
+    } else if (this.state.request.length === 0) {
+      store.addNotification({
+        title: 'Invalid request',
+        message: 'Please select atleast one field to request verification',
+        type: 'danger', // 'default', 'success', 'info', 'warning'
+        container: 'top-right', // where to position the notifications
+        animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+        animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+        dismiss: {
+          duration: 3000,
+          showIcon: true,
+          pauseOnHover: true,
+        },
+      });
+    } else {
+      try {
+        await this.state.contract.methods
+          .getEncryptionPublicKey(this.state.ownerAddress)
+          .call()
+          .then((encryptionPublicKey) => {
+            const encryptedDataOwner = bufferToHex(
+              Buffer.from(
+                JSON.stringify(
+                  encrypt(
+                    encryptionPublicKey,
+                    { data: JSON.stringify(this.state.request) },
+                    'x25519-xsalsa20-poly1305'
+                  )
+                ),
+                'utf8'
+              )
+            );
 
-          this.state.contract.methods
-            .getEncryptionPublicKey(this.state.user)
-            .call()
-            .then((encryptionPublicKey) => {
-              const encryptedDataVerifier = bufferToHex(
-                Buffer.from(
-                  JSON.stringify(
-                    encrypt(
-                      encryptionPublicKey,
-                      { data: JSON.stringify(this.state.request) },
-                      'x25519-xsalsa20-poly1305'
-                    )
-                  ),
-                  'utf8'
-                )
-              );
-              this.state.contract.methods
-                .requestVerification(
-                  this.state.ownerAddress,
-                  this.state.docName,
-                  encryptedDataOwner,
-                  encryptedDataVerifier
-                )
-                .send({ from: this.state.user }, (err, txnHash) => {
-                  if (err) {
-                    store.addNotification({
-                      title: 'Transaction failed',
-                      message: 'Sign the transaction to request verification',
-                      type: 'danger', // 'default', 'success', 'info', 'warning'
-                      container: 'top-right', // where to position the notifications
-                      animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
-                      animationOut: [
-                        'animate__animated',
-                        'animate__fadeOutDown',
-                      ], // animate.css classes that's applied
-                      dismiss: {
-                        duration: 3000,
-                        showIcon: true,
-                        pauseOnHover: true,
-                      },
-                    });
-                  } else {
-                    this.clearInputs();
-                  }
-                });
-            });
+            this.state.contract.methods
+              .getEncryptionPublicKey(this.state.user)
+              .call()
+              .then((encryptionPublicKey) => {
+                const encryptedDataVerifier = bufferToHex(
+                  Buffer.from(
+                    JSON.stringify(
+                      encrypt(
+                        encryptionPublicKey,
+                        { data: JSON.stringify(this.state.request) },
+                        'x25519-xsalsa20-poly1305'
+                      )
+                    ),
+                    'utf8'
+                  )
+                );
+                this.state.contract.methods
+                  .requestVerification(
+                    this.state.ownerAddress,
+                    this.state.docName,
+                    encryptedDataOwner,
+                    encryptedDataVerifier
+                  )
+                  .send({ from: this.state.user }, (err, txnHash) => {
+                    if (err) {
+                      store.addNotification({
+                        title: 'Transaction failed',
+                        message: 'Sign the transaction to request verification',
+                        type: 'danger', // 'default', 'success', 'info', 'warning'
+                        container: 'top-right', // where to position the notifications
+                        animationIn: [
+                          'animate__animated',
+                          'animate__fadeInDown',
+                        ], // animate.css classes that's applied
+                        animationOut: [
+                          'animate__animated',
+                          'animate__fadeOutDown',
+                        ], // animate.css classes that's applied
+                        dismiss: {
+                          duration: 3000,
+                          showIcon: true,
+                          pauseOnHover: true,
+                        },
+                      });
+                    } else {
+                      this.clearInputs();
+                    }
+                  });
+              });
+          });
+      } catch (error) {
+        store.addNotification({
+          title: 'Invalid owner address',
+          message: 'Please check and correct owner address',
+          type: 'danger', // 'default', 'success', 'info', 'warning'
+          container: 'top-right', // where to position the notifications
+          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+          dismiss: {
+            duration: 3000,
+            showIcon: true,
+            pauseOnHover: true,
+          },
         });
-    } catch (error) {
-      console.log(error);
+      }
     }
   };
 
@@ -240,6 +292,7 @@ export default class Dashboard extends Component {
                         className='block text-sm font-medium text-gray-700'
                       >
                         Document owner address
+                        <span className='text-red-500'>*</span>
                       </label>
                       <input
                         type='text'
