@@ -1,6 +1,11 @@
 import { React, useState, useEffect } from 'react';
 import multiavatar from '@multiavatar/multiavatar';
 
+import { ReactComponent as Check } from '../assets/icons/check.svg';
+import { ReactComponent as Cross } from '../assets/icons/cross.svg';
+import { ReactComponent as Revoke } from '../assets/icons/revoke.svg';
+import { ReactComponent as Lock } from '../assets/icons/lock.svg';
+
 export default function Request(props) {
   const [decryptedData, setDecryptedData] = useState(null);
 
@@ -51,44 +56,11 @@ export default function Request(props) {
                 {ele.value ? ele.value : ''}
               </p>
               {ele.verified ? (
-                <svg
-                  className='h-5 w-5 text-green-700 col-span-1'
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 20 20'
-                  fill='currentColor'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z'
-                    clipRule='evenodd'
-                  />
-                </svg>
+                <Check className='h-5 w-5 text-green-700 col-span-1' />
               ) : props.status === 'Approved' ? (
-                <svg
-                  className='h5 w-5 text-red-700 col-span-1'
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 20 20'
-                  fill='currentColor'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
-                    clipRule='evenodd'
-                  />
-                </svg>
+                <Cross className='h5 w-5 text-red-700 col-span-1' />
               ) : props.status === 'Revoked' ? (
-                <svg
-                  className='h5 w-5 text-red-700 col-span-1'
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 20 20'
-                  fill='currentColor'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                    clipRule='evenodd'
-                  />
-                </svg>
+                <Revoke className='h5 w-5 text-red-700 col-span-1' />
               ) : null}
             </div>
           ))}
@@ -101,18 +73,7 @@ export default function Request(props) {
             onClick={decryptData}
             className='flex items-center justify-between py-1 px-2 m-auto border border-transparent shadow-sm text-sm rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
           >
-            <svg
-              className='h-4 w-4'
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path
-                fillRule='evenodd'
-                d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z'
-                clipRule='evenodd'
-              />
-            </svg>
+            <Lock className='h-4 w-4' />
             <span className='ml-1'>Decrypt request</span>
           </button>
         </td>

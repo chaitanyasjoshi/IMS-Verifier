@@ -8,6 +8,7 @@ export default function Field(props) {
     setChecked(false);
     setValue('');
   }, [props.docName]);
+
   return (
     <div className='mt-2 flex items-center'>
       <div className='flex items-center h-5'>

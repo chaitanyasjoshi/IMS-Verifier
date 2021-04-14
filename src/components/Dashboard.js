@@ -65,19 +65,11 @@ export default class Dashboard extends Component {
             if (err) {
               return console.error(err);
             }
-            store.addNotification({
-              title: 'Verification',
-              message: 'Verification request generated successfully',
-              type: 'success', // 'default', 'success', 'info', 'warning'
-              container: 'top-right', // where to position the notifications
-              animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
-              animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
-              dismiss: {
-                duration: 3000,
-                showIcon: true,
-                pauseOnHover: true,
-              },
-            });
+            this.notify(
+              'Verification',
+              'Verification request generated successfully',
+              'success'
+            );
           }
         );
       }
@@ -161,33 +153,17 @@ export default class Dashboard extends Component {
 
   requestVerification = async () => {
     if (this.state.ownerAddress === '') {
-      store.addNotification({
-        title: 'Invalid owner address',
-        message: 'Owner address cannot be empty',
-        type: 'danger', // 'default', 'success', 'info', 'warning'
-        container: 'top-right', // where to position the notifications
-        animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
-        animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
-        dismiss: {
-          duration: 3000,
-          showIcon: true,
-          pauseOnHover: true,
-        },
-      });
+      this.notify(
+        'Invalid owner address',
+        'Owner address cannot be empty',
+        'danger'
+      );
     } else if (this.state.request.length === 0) {
-      store.addNotification({
-        title: 'Invalid request',
-        message: 'Please select atleast one field to request verification',
-        type: 'danger', // 'default', 'success', 'info', 'warning'
-        container: 'top-right', // where to position the notifications
-        animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
-        animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
-        dismiss: {
-          duration: 3000,
-          showIcon: true,
-          pauseOnHover: true,
-        },
-      });
+      this.notify(
+        'Invalid request',
+        'Please select atleast one field to request verification',
+        'danger'
+      );
     } else {
       try {
         await this.state.contract.methods
@@ -232,25 +208,11 @@ export default class Dashboard extends Component {
                   )
                   .send({ from: this.state.user }, (err, txnHash) => {
                     if (err) {
-                      store.addNotification({
-                        title: 'Transaction failed',
-                        message: 'Sign the transaction to request verification',
-                        type: 'danger', // 'default', 'success', 'info', 'warning'
-                        container: 'top-right', // where to position the notifications
-                        animationIn: [
-                          'animate__animated',
-                          'animate__fadeInDown',
-                        ], // animate.css classes that's applied
-                        animationOut: [
-                          'animate__animated',
-                          'animate__fadeOutDown',
-                        ], // animate.css classes that's applied
-                        dismiss: {
-                          duration: 3000,
-                          showIcon: true,
-                          pauseOnHover: true,
-                        },
-                      });
+                      this.notify(
+                        'Transaction failed',
+                        'Sign the transaction to request verification',
+                        'danger'
+                      );
                     } else {
                       this.clearInputs();
                     }
@@ -258,21 +220,29 @@ export default class Dashboard extends Component {
               });
           });
       } catch (error) {
-        store.addNotification({
-          title: 'Invalid owner address',
-          message: 'Please check and correct owner address',
-          type: 'danger', // 'default', 'success', 'info', 'warning'
-          container: 'top-right', // where to position the notifications
-          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
-          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
-          dismiss: {
-            duration: 3000,
-            showIcon: true,
-            pauseOnHover: true,
-          },
-        });
+        this.notify(
+          'Invalid owner address',
+          'Please check and correct owner address',
+          'danger'
+        );
       }
     }
+  };
+
+  notify = (title, message, type) => {
+    store.addNotification({
+      title: title,
+      message: message,
+      type: type, // 'default', 'success', 'info', 'warning'
+      container: 'top-right', // where to position the notifications
+      animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+      animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+      dismiss: {
+        duration: 3000,
+        showIcon: true,
+        pauseOnHover: true,
+      },
+    });
   };
 
   render() {
