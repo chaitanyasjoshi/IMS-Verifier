@@ -23,10 +23,7 @@ export default function Authentication(props) {
 
   const initialize = () => {
     window.ethereum.on('accountsChanged', async function (accounts) {
-      auth.logout(() => {
-        props.history.push('/');
-        window.location.reload();
-      });
+      window.location.reload();
     });
 
     auth
