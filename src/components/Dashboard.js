@@ -52,15 +52,18 @@ export default class Dashboard extends Component {
       () => {
         this.fetchTemplates();
 
-        this.state.contract.events.TemplateCreated((err, result) => {
-          if (err) {
-            return console.error(err);
+        this.state.contract.events.TemplateCreated(
+          { fromBlock: 'latest' },
+          (err, result) => {
+            if (err) {
+              return console.error(err);
+            }
+            this.fetchTemplates();
           }
-          this.fetchTemplates();
-        });
+        );
 
         this.state.contract.events.RequestGenerated(
-          { filter: { verifier: this.state.user } },
+          { filter: { verifier: this.state.user }, fromBlock: 'latest' },
           (err, result) => {
             if (err) {
               return console.error(err);
